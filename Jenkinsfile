@@ -61,5 +61,26 @@ pipeline {
                 """
             }
         }
-    }
-}
+
+        stage('Deploy Node 2') {
+            when {
+                expression { params.select_environment == 'node-2' }
+            }
+            agent { label 'jenkins-node-2' }
+            steps {
+                script {
+                    timeout(time: 5, unit: 'DAYS') {
+                        input message: 'Deployment approved?'
+                        dir("/var/www/html") {
+                            unstash "maven-build"
+                        }
+                        sh """
+                        cd /var/www/html/
+                        jar -xvf webapp.war
+                        """
+                    }
+                }
+            } // Close the steps block
+        } // Close the Deploy Node 2 stage
+    } // Close the stages block
+} // Close the pipeline block
